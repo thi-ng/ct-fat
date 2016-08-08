@@ -54,20 +54,23 @@ static CT_Var add_u32(CT_Var a, CT_Var b) {
   return NULL;
 }
 
-static void init() __attribute__((constructor(100)));
+void init_type_num() {
+  if (!Type_I32.id) {
+    init_type_cast();
+    init_type_print();
+    init_type_math();
+    ct_register_type(&Type_I32);
+    ct_register_type(&Type_U32);
+    ct_register_type(&Type_F32);
+    ct_register_type(&Type_F64);
 
-static void init() {
-  ct_register_type(&Type_I32);
-  ct_register_type(&Type_U32);
-  ct_register_type(&Type_F32);
-  ct_register_type(&Type_F64);
+    ct_extend_type(Type_I32, ct_type_impl(Type_Print, CT_Print, print_i32));
 
-  ct_extend_type(Type_I32, ct_type_impl(Type_Print, CT_Print, print_i32));
+    ct_extend_type(Type_U32, ct_type_impl(Type_Print, CT_Print, print_u32),
+                   ct_type_impl(Type_Math, CT_Math, add_u32));
 
-  ct_extend_type(Type_U32, ct_type_impl(Type_Print, CT_Print, print_u32),
-                 ct_type_impl(Type_Math, CT_Math, add_u32));
+    ct_extend_type(Type_F32, ct_type_impl(Type_Print, CT_Print, print_f32));
 
-  ct_extend_type(Type_F32, ct_type_impl(Type_Print, CT_Print, print_f32));
-
-  ct_extend_type(Type_F64, ct_type_impl(Type_Print, CT_Print, print_f64));
+    ct_extend_type(Type_F64, ct_type_impl(Type_Print, CT_Print, print_f64));
+  }
 }

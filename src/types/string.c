@@ -13,18 +13,35 @@ static void print_str(const CT_Var x) {
 
 static CT_Var cast_str(const CT_Var x, const CT_Typedef *type) {
   CT_INFO("cast target type: %zu", type->id);
+  if (type->id == Type_I32.id) {
+    CT_I32 *res = new_i32();
+    *res        = (CT_I32)atol(((CT_String *)x)->val);
+    return res;
+  }
   if (type->id == Type_U32.id) {
     CT_U32 *res = new_u32();
-    *res        = atol(((CT_String *)x)->val);
+    *res        = (CT_U32)atol(((CT_String *)x)->val);
+    return res;
+  }
+  if (type->id == Type_F32.id) {
+    CT_F32 *res = new_f32();
+    *res        = (CT_F32)atof(((CT_String *)x)->val);
+    return res;
+  }
+  if (type->id == Type_F64.id) {
+    CT_F64 *res = new_f64();
+    *res        = (CT_F64)atof(((CT_String *)x)->val);
     return res;
   }
   return NULL;
 }
 
-static void init() __attribute__((constructor(102)));
-
-static void init() {
-  ct_register_type(&Type_String);
-  ct_extend_type(Type_String, ct_type_impl(Type_Print, CT_Print, print_str),
-                 ct_type_impl(Type_Cast, CT_Cast, cast_str));
+void init_type_string() {
+  if (!Type_String.id) {
+    init_type_cast();
+    init_type_print();
+    ct_register_type(&Type_String);
+    ct_extend_type(Type_String, ct_type_impl(Type_Print, CT_Print, print_str),
+                   ct_type_impl(Type_Cast, CT_Cast, cast_str));
+  }
 }

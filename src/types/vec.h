@@ -7,3 +7,5 @@
 typedef struct { float x, y, z, w; } CT_Vec4;
 
 extern CT_Typedef Type_Vec4;
+
+void init_type_vec() __attribute__((constructor(101)));

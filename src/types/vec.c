@@ -9,9 +9,9 @@ static void print_vec4(const CT_Var x) {
   CT_INFO("vec4: [%f, %f, %f, %f]", v->x, v->y, v->z, v->w);
 }
 
-static void init() __attribute__((constructor(101)));
-
-static void init() {
-  ct_register_type(&Type_Vec4);
-  ct_extend_type(Type_Vec4, ct_type_impl(Type_Print, CT_Print, print_vec4));
+void init_type_vec() {
+  if (!Type_Vec4.id) {
+    ct_register_type(&Type_Vec4);
+    ct_extend_type(Type_Vec4, ct_type_impl(Type_Print, CT_Print, print_vec4));
+  }
 }

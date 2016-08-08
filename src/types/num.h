@@ -21,3 +21,5 @@ extern CT_Typedef Type_I32;
 extern CT_Typedef Type_U32;
 extern CT_Typedef Type_F32;
 extern CT_Typedef Type_F64;
+
+void init_type_num() __attribute__((constructor(100)));

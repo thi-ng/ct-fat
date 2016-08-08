@@ -10,3 +10,5 @@ typedef struct {
 } CT_String;
 
 extern CT_Typedef Type_String;
+
+void init_type_string() __attribute__((constructor(100)));

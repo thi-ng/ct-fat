@@ -30,7 +30,7 @@ int main() {
   print(add(a, b1));
   CT_INFO("a u32?: %d", ct_is_instance_of(a, &Type_U32));
   CT_INFO("impls Print?: %d", ct_implements(b1, &Type_Print));
-  print(cast($str("257"), &Type_U32));
+  print(cast($str("257"), &Type_F32));
   ct_free(a);
   ct_free(b1);
   ct_free(b2);

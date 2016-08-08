@@ -1,9 +1,9 @@
 #include "protos/cast.h"
 
-CT_Typedef Type_Cast = {.name = "Cast", .abstract = 1};
+CT_Typedef Type_Cast = {.abstract = 1, .name = "Cast"};
 
-static void init() __attribute__((constructor(10)));
-
-static void init() {
-  ct_register_type(&Type_Cast);
+void init_type_cast() {
+  if (!Type_Cast.id) {
+    ct_register_type(&Type_Cast);
+  }
 }
