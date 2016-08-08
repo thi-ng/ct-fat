@@ -12,6 +12,12 @@
 
 #define ct_decode_align(a) (2 << (a + 1))
 
+#define extend_type(T, num, ...) \
+  ct_typedef_set_impls(&T, (CT_TypeImpl[]){__VA_ARGS__}, num)
+
+#define type_implementation(T, proto, ...) \
+  { .type = &T, .size = sizeof(proto), .impls = &((proto){__VA_ARGS__}) }
+
 #define ct_alloc_stack(type, id, align)                                   \
   ct_header_init((uint8_t[ct_decode_align(align) + sizeof(type)]){0}, id, \
                  CT_ALLOC_STACK, align)
@@ -255,34 +261,20 @@ INITIALIZER(init_foo) {
   __types.types[CT_TYPEID_STR]   = &Type_String;
   __types.types[CT_TYPEID_PRINT] = &Type_Print;
 
-  ct_typedef_set_impls(&Type_I32,
-                       (CT_TypeImpl[]){{.type  = &Type_Print,
-                                        .size  = sizeof(CT_Print),
-                                        .impls = &((CT_Print){print_i32})}},
-                       1);
-  ct_typedef_set_impls(&Type_U32,
-                       (CT_TypeImpl[]){{.type  = &Type_Print,
-                                        .size  = sizeof(CT_Print),
-                                        .impls = &((CT_Print){print_u32})},
-                                       {.type  = &Type_Math,
-                                        .size  = sizeof(CT_Math),
-                                        .impls = &((CT_Math){add_u32})}},
-                       2);
-  ct_typedef_set_impls(&Type_F32,
-                       (CT_TypeImpl[]){{.type  = &Type_Print,
-                                        .size  = sizeof(CT_Print),
-                                        .impls = &((CT_Print){print_f32})}},
-                       1);
-  ct_typedef_set_impls(&Type_F64,
-                       (CT_TypeImpl[]){{.type  = &Type_Print,
-                                        .size  = sizeof(CT_Print),
-                                        .impls = &((CT_Print){print_f64})}},
-                       1);
-  ct_typedef_set_impls(&Type_String,
-                       (CT_TypeImpl[]){{.type  = &Type_Print,
-                                        .size  = sizeof(CT_Print),
-                                        .impls = &((CT_Print){print_str})}},
-                       1);
+  extend_type(Type_I32, 1,
+              type_implementation(Type_Print, CT_Print, print_i32));
+
+  extend_type(Type_U32, 2, type_implementation(Type_Print, CT_Print, print_u32),
+              type_implementation(Type_Math, CT_Math, add_u32));
+
+  extend_type(Type_F32, 1,
+              type_implementation(Type_Print, CT_Print, print_f32));
+
+  extend_type(Type_F64, 1,
+              type_implementation(Type_Print, CT_Print, print_f64));
+
+  extend_type(Type_String, 1,
+              type_implementation(Type_Print, CT_Print, print_str));
 }
 
 int main() {
