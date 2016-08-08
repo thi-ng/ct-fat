@@ -2,8 +2,9 @@
 #include <string.h>
 
 #include "cthing.h"
+#include "init.h"
 
-#define CT_TYPE_BITS 13
+#define CT_TYPE_BITS 8
 #define CT_ALLOC_BITS 2
 #define CT_MARK_BITS 1
 #define CT_REF_BITS 13
@@ -15,8 +16,9 @@
   ct_header_init((uint8_t[ct_decode_align(align) + sizeof(type)]){0}, id, \
                  CT_ALLOC_STACK, align)
 
-#define $(type, id, align, ...) \
-  memcpy(ct_alloc_stack(type, id, align), &((type){__VA_ARGS__}), sizeof(type))
+#define $(type, id, align, ...)                                           \
+  (type *)memcpy(ct_alloc_stack(type, id, align), &((type){__VA_ARGS__}), \
+                 sizeof(type))
 
 #define $str(x) $(CT_String, CT_TYPEID_STR, CT_ALIGN4, x)
 #define $i32(x) $(CT_I32, CT_TYPEID_I32, CT_ALIGN4, x)
@@ -44,21 +46,27 @@ enum {
   CT_TYPEID_VEC4,
   CT_TYPEID_STR,
   CT_TYPEID_CONS,
-  CT_TYPEID_PRINT
+  CT_TYPEID_PRINT,
+  CT_TYPEID_MATH,
+  CT_TYPEID_MAX_PRIM
 };
 
 enum { CT_ALLOC_STACK = 0, CT_ALLOC_HEAP = 1, CT_ALLOC_RAW = 2 };
 enum { CT_ALIGN4 = 0, CT_ALIGN8, CT_ALIGN16, CT_ALIGN32 };
 
-typedef struct { void (*print)(CT_Var); } CT_Print;
-
 typedef struct {
-  CT_Var *impls;
+  void *impls[1 << CT_TYPE_BITS];
   size_t size;
   size_t id : CT_TYPE_BITS;
   size_t align : CT_OFFSET_BITS;
   char *name;
 } CT_Typedef;
+
+typedef struct {
+  CT_Typedef *type;
+  size_t size;
+  void *impls;
+} CT_TypeImpl;
 
 typedef struct {
   CT_Typedef *types[1 << CT_TYPE_BITS];
@@ -77,6 +85,9 @@ typedef struct {
   char *val;
   size_t len;
 } CT_String;
+
+typedef struct { void (*print)(CT_Var); } CT_Print;
+typedef struct { CT_Var (*add)(CT_Var, CT_Var); } CT_Math;
 
 typedef struct { int32_t val; } CT_I32;
 
@@ -116,42 +127,46 @@ static void print_str(CT_Var x) {
   CT_INFO("str: %s", ((CT_String *)x)->val);
 }
 
-static CT_Typedef Type_Print = {.impls = NULL,
-                                .id    = CT_TYPEID_PRINT,
-                                .name  = "Print"};
+CT_Typedef Type_Print = {.id = CT_TYPEID_PRINT, .name = "Print"};
 
-static CT_Typedef Type_I32 = {.impls = (void *[]){&((CT_Print){print_i32})},
-                              .size  = 4,
-                              .align = CT_ALIGN4,
-                              .id    = CT_TYPEID_I32,
-                              .name  = "I32"};
+CT_Typedef Type_Math = {.id = CT_TYPEID_MATH, .name = "Math"};
 
-static CT_Typedef Type_U32 = {.impls = (void *[]){&((CT_Print){print_u32})},
-                              .size  = 4,
-                              .align = CT_ALIGN4,
-                              .id    = CT_TYPEID_U32,
-                              .name  = "U32"};
+CT_Typedef Type_I32 = {.size  = 4,
+                       .align = CT_ALIGN4,
+                       .id    = CT_TYPEID_I32,
+                       .name  = "I32"};
 
-static CT_Typedef Type_F32 =
-    (CT_Typedef){.impls = (void *[]){&((CT_Print){print_f32})},
-                 .size  = 8,
-                 .align = CT_ALIGN4,
-                 .id    = CT_TYPEID_F32,
-                 .name  = "F64"};
+CT_Typedef Type_U32 = {.size  = 4,
+                       .align = CT_ALIGN4,
+                       .id    = CT_TYPEID_U32,
+                       .name  = "U32"};
 
-static CT_Typedef Type_F64 =
-    (CT_Typedef){.impls = (void *[]){&((CT_Print){print_f64})},
-                 .size  = 8,
-                 .align = CT_ALIGN8,
-                 .id    = CT_TYPEID_F64,
-                 .name  = "F64"};
+CT_Typedef Type_F32 = {.size  = 8,
+                       .align = CT_ALIGN4,
+                       .id    = CT_TYPEID_F32,
+                       .name  = "F64"};
 
-static CT_Typedef Type_String =
-    (CT_Typedef){.impls = (void *[]){&((CT_Print){print_str})},
-                 .size  = sizeof(char *),
-                 .align = CT_ALIGN4,
-                 .id    = CT_TYPEID_STR,
-                 .name  = "String"};
+CT_Typedef Type_F64 = {.size  = 8,
+                       .align = CT_ALIGN8,
+                       .id    = CT_TYPEID_F64,
+                       .name  = "F64"};
+
+CT_Typedef Type_String = {.size  = sizeof(char *),
+                          .align = CT_ALIGN4,
+                          .id    = CT_TYPEID_STR,
+                          .name  = "String"};
+
+void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num) {
+  CT_INFO("set type impls: %zu", type->id);
+  for (size_t n = 0; n < num; n++) {
+    CT_TypeImpl *i = &impls[n];
+    CT_INFO("\tadd impl: %zu, src: %p, size: %zu", i->type->id, i->impls,
+            i->size);
+    uint8_t *ptr = calloc(1, i->size);
+    memcpy(ptr, i->impls, i->size);
+    type->impls[i->type->id] = ptr;
+  }
+}
 
 ct_inline CT_Header *ct_get_header(CT_Var self) {
   return (CT_Header *)((uint8_t *)self - sizeof(CT_Header));
@@ -218,24 +233,68 @@ CT_Var ct_header_init(CT_Var head, size_t type_id, size_t alloc, size_t align) {
 }
 
 void print(CT_Var x) {
-  ((CT_Print *)(ct_typeof(x)->impls[0]))->print(x);
+  ((CT_Print *)(ct_typeof(x)->impls[Type_Print.id]))->print(x);
 }
 
-int main() {
+static CT_Var add_u32(CT_Var a, CT_Var b) {
+  CT_U32 *c = new_u32();
+  c->val    = ((CT_U32 *)a)->val + ((CT_U32 *)b)->val;
+  return c;
+}
+
+CT_Var add(CT_Var a, CT_Var b) {
+  return ((CT_Math *)(ct_typeof(a)->impls[Type_Math.id]))->add(a, b);
+}
+
+INITIALIZER(init_foo) {
+  printf("init ct-fatptr\n");
   __types.types[CT_TYPEID_I32]   = &Type_I32;
   __types.types[CT_TYPEID_U32]   = &Type_U32;
   __types.types[CT_TYPEID_F32]   = &Type_F32;
   __types.types[CT_TYPEID_F64]   = &Type_F64;
   __types.types[CT_TYPEID_STR]   = &Type_String;
   __types.types[CT_TYPEID_PRINT] = &Type_Print;
+
+  ct_typedef_set_impls(&Type_I32,
+                       (CT_TypeImpl[]){{.type  = &Type_Print,
+                                        .size  = sizeof(CT_Print),
+                                        .impls = &((CT_Print){print_i32})}},
+                       1);
+  ct_typedef_set_impls(&Type_U32,
+                       (CT_TypeImpl[]){{.type  = &Type_Print,
+                                        .size  = sizeof(CT_Print),
+                                        .impls = &((CT_Print){print_u32})},
+                                       {.type  = &Type_Math,
+                                        .size  = sizeof(CT_Math),
+                                        .impls = &((CT_Math){add_u32})}},
+                       2);
+  ct_typedef_set_impls(&Type_F32,
+                       (CT_TypeImpl[]){{.type  = &Type_Print,
+                                        .size  = sizeof(CT_Print),
+                                        .impls = &((CT_Print){print_f32})}},
+                       1);
+  ct_typedef_set_impls(&Type_F64,
+                       (CT_TypeImpl[]){{.type  = &Type_Print,
+                                        .size  = sizeof(CT_Print),
+                                        .impls = &((CT_Print){print_f64})}},
+                       1);
+  ct_typedef_set_impls(&Type_String,
+                       (CT_TypeImpl[]){{.type  = &Type_Print,
+                                        .size  = sizeof(CT_Print),
+                                        .impls = &((CT_Print){print_str})}},
+                       1);
+}
+
+int main() {
   CT_INFO("hd size: %zu", sizeof(CT_Header));
-  CT_Var *a = $u32(0xdeadbeef);
+  //CT_U32 *a = $u32(0xdeadbeef);
+  CT_U32 *a = $u32(0x40302010);
   //CT_Var *b = $u32(0xcafebabe);
   CT_F64 *b    = new_f64();
   b->val       = 3.1415926;
   CT_Vec4 *c   = $vec4(1, 2, 3, 4);
   CT_String *d = $str("hello world!");
-  CT_INFO("a: %p, %08x", a, *((uint32_t *)a));
+  CT_INFO("a: %p, %08x", a, a->val);
   CT_INFO("b: %p, %f", b, b->val);
   CT_INFO("c: %p, [%f, %f, %f, %f]", c, c->x, c->y, c->z, c->w);
   CT_INFO("d: %p, %s", d, d->val);
@@ -247,6 +306,7 @@ int main() {
   print(a);
   print(b);
   print(d);
+  print(add(a, a));
   ct_dealloc(a);
   ct_dealloc(b);
   ct_dealloc(c);
