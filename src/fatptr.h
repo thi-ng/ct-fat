@@ -23,7 +23,7 @@
 #define ct_type_impl(T, proto, ...) \
   { .type = &T, .size = sizeof(proto), .impls = &((proto){__VA_ARGS__}) }
 
-#define method_lookup(T, proto, instance) \
+#define protocol_lookup(T, proto, instance) \
   ((proto *)(ct_typeof(instance)->impls[(T).id]))
 
 #define ct_alloc_stack(type)                                             \
