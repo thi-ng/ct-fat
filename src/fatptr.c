@@ -1,10 +1,6 @@
 #include "fatptr.h"
 
-static CT_TypeCache __ctfatptr_types = {.types = {0}, .next_id = 0};
-
-CT_Typedef *ct_typeof(CT_Var self) {
-  return __ctfatptr_types.types[ct_get_header(self)->type_id];
-}
+CT_TypeCache __ctfatptr_types = {.types = {0}, .next_id = 0};
 
 void ct_register_type(CT_Typedef *type) {
   type->id = __ctfatptr_types.next_id;

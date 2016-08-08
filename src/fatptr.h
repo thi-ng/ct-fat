@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "cthing.h"
@@ -33,9 +34,9 @@
   (instance *)memcpy(ct_alloc_stack(type), &((instance){__VA_ARGS__}), \
                      sizeof(instance))
 
-#define ct_new(type, instance)                                         \
-  ct_header_init(ct_alloc(&type) - ct_decode_align(type.align), &type, \
-                 CT_ALLOC_HEAP)
+#define ct_new(type, instance)                                              \
+  (instance *)ct_header_init(ct_alloc(&type) - ct_decode_align(type.align), \
+                             &type, CT_ALLOC_HEAP)
 
 // -------------------- internal type definitions
 
@@ -49,6 +50,7 @@ typedef struct {
   size_t size;
   size_t id : CT_TYPE_BITS;
   size_t align : CT_OFFSET_BITS;
+  size_t abstract : 1;
   char *name;
 } CT_Typedef;
 
@@ -71,7 +73,8 @@ typedef struct {
   uint32_t align : CT_OFFSET_BITS;
 } CT_Header;
 
-CT_Typedef *ct_typeof(CT_Var self) __attribute__((always_inline));
+extern CT_TypeCache __ctfatptr_types;
+
 void ct_register_type(CT_Typedef *type);
 void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num);
 
@@ -81,8 +84,20 @@ void ct_free(CT_Var self);
 CT_Var ct_header_init(CT_Var head, const CT_Typedef *type, size_t alloc);
 void ct_header_trace(CT_Header *hd);
 
-ct_inline CT_Header *ct_get_header(CT_Var self) {
+ct_inline CT_Header *ct_get_header(const CT_Var self) {
   return (CT_Header *)((uint8_t *)self - sizeof(CT_Header));
+}
+
+ct_inline CT_Typedef *ct_typeof(const CT_Var self) {
+  return __ctfatptr_types.types[ct_get_header(self)->type_id];
+}
+
+ct_inline bool ct_is_instance_of(const CT_Var self, const CT_Typedef *type) {
+  return ct_get_header(self)->type_id == type->id;
+}
+
+ct_inline bool ct_implements(const CT_Var self, const CT_Typedef *proto) {
+  return ct_typeof(self)->impls[proto->id] != NULL;
 }
 
 // -------------------- builtin type definitions
@@ -93,5 +108,6 @@ ct_inline CT_Header *ct_get_header(CT_Var self) {
 
 // -------------------- builtin type definitions
 
+#include "protos/cast.h"
 #include "protos/math.h"
 #include "protos/print.h"
