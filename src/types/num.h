@@ -12,10 +12,10 @@
 #define new_f32() ct_new(Type_F32, CT_F32)
 #define new_f64() ct_new(Type_F64, CT_F64)
 
-typedef struct { int32_t val; } CT_I32;
-typedef struct { uint32_t val; } CT_U32;
-typedef struct { float val; } CT_F32;
-typedef struct { double val; } CT_F64;
+typedef int32_t CT_I32;
+typedef uint32_t CT_U32;
+typedef float CT_F32;
+typedef double CT_F64;
 
 extern CT_Typedef Type_I32;
 extern CT_Typedef Type_U32;
