@@ -1,6 +1,6 @@
 #include "protos/math.h"
 
-CT_Typedef Type_Math = {.name = "Math"};
+CT_Typedef Type_Math = {.name = "Math", .abstract = 1};
 
 static void init() __attribute__((constructor(10)));
 

@@ -1,6 +1,6 @@
 #include "protos/print.h"
 
-CT_Typedef Type_Print = {.name = "Print"};
+CT_Typedef Type_Print = {.name = "Print", .abstract = 1};
 
 static void init() __attribute__((constructor(10)));
 
