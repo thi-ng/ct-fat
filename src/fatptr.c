@@ -37,7 +37,7 @@ void ct_free(CT_Var self) {
   CT_Header *hd  = ct_get_header(self);
   size_t size    = ct_decode_align(hd->align);
   uint8_t *block = (uint8_t *)self - size;
-  CT_DEBUG("free block: %p", block);
+  CT_DEBUG("dealloc: %p", block);
   if (CT_ALLOC_HEAP == hd->alloc) {
     CT_DEBUG("free: %p", block);
     free(block);
@@ -68,14 +68,4 @@ CT_Var ct_header_init(CT_Var head, const CT_Typedef *type, size_t alloc) {
   hd->align   = type->align;
   hd->refs    = 0;
   return (uint8_t *)hd + sizeof(CT_Header);
-}
-
-INITIALIZER(init_types) {
-  CT_INFO("==== init ct-fatptr ====");
-  /* CT_Typedef *builtins[] = {&Type_I32,  &Type_U32,    &Type_F32,   &Type_F64, */
-  /*                           &Type_Vec4, &Type_String, &Type_Print, &Type_Math}; */
-  /* for (size_t i = 0, num = sizeof(builtins) / sizeof(CT_Typedef *); i < num; */
-  /*      i++) { */
-  /*   ct_register_type(builtins[i]); */
-  /* } */
 }

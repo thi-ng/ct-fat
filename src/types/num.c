@@ -37,11 +37,11 @@ static void print_i64(FILE *out, const CT_Var x) {
 }
 
 static void print_u32(FILE *out, const CT_Var x) {
-  fprintf(out, "u32: %" PRIx32 "\n", *((CT_U32 *)x));
+  fprintf(out, "u32: 0x%" PRIx32 "\n", *((CT_U32 *)x));
 }
 
 static void print_u64(FILE *out, const CT_Var x) {
-  fprintf(out, "u64: %" PRIx64 "\n", *((CT_U64 *)x));
+  fprintf(out, "u64: 0x%" PRIx64 "\n", *((CT_U64 *)x));
 }
 
 static void print_f32(FILE *out, const CT_Var x) {
