@@ -9,5 +9,6 @@ extern CT_Typedef Type_Math;
 void init_type_math() __attribute__((constructor));
 
 ct_inline CT_Var ct_add(CT_Var a, CT_Var b) {
-  return ct_protocol_lookup(Type_Math, CT_Math, a)->add(a, b);
+  ct_protocol_call(Type_Math, CT_Math, add, a, a, b);
+  return NULL;  // FIXME
 }

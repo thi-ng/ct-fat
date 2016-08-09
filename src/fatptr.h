@@ -15,6 +15,11 @@
 
 #define ct_decode_align(a) (2 << (a + 1))
 
+#define ct_deftype(T, instance, name_, align_) \
+  CT_Typedef T = {.size = sizeof(instance), .align = align_, .name = name_}
+
+#define ct_defproto(T, name_) CT_Typedef T = {.abstract = 1, .name = name_}
+
 #define ct_extend_type(T, ...)                                            \
   do {                                                                    \
     CT_TypeImpl impls[] = {__VA_ARGS__};                                  \
@@ -26,6 +31,12 @@
 
 #define ct_protocol_lookup(T, proto, instance) \
   ((proto *)(ct_typeof(instance)->impls[(T).id]))
+
+#define ct_protocol_call(T, P, method, inst, ...) \
+  P *proto = ct_protocol_lookup(T, P, inst);      \
+  if (proto && proto->method) {                   \
+    return proto->method(__VA_ARGS__);            \
+  }
 
 #define ct_alloc_stack(type)                                             \
   ct_header_init(alloca(ct_decode_align(type.align) + type.size), &type, \
@@ -64,7 +75,7 @@ typedef struct {
 typedef struct {
   CT_Typedef *types[1 << CT_TYPE_BITS];
   size_t next_id;
-} CT_TypeCache;
+} CT_TypeRegistry;
 
 typedef struct {
   uint32_t type_id : CT_TYPE_BITS;
@@ -74,7 +85,7 @@ typedef struct {
   uint32_t align : CT_OFFSET_BITS;
 } CT_Header;
 
-extern CT_TypeCache __ctfatptr_types;
+extern CT_TypeRegistry __ctfatptr_types;
 
 void ct_register_type(CT_Typedef *type);
 void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num);

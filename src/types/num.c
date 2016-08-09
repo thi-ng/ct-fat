@@ -4,29 +4,12 @@
 #include "protos/print.h"
 #include "types/num.h"
 
-CT_Typedef Type_I32 = {.size  = sizeof(CT_I32),
-                       .align = CT_ALIGN4,
-                       .name  = "I32"};
-
-CT_Typedef Type_I64 = {.size  = sizeof(CT_I64),
-                       .align = CT_ALIGN8,
-                       .name  = "I64"};
-
-CT_Typedef Type_U32 = {.size  = sizeof(CT_U32),
-                       .align = CT_ALIGN4,
-                       .name  = "U32"};
-
-CT_Typedef Type_U64 = {.size  = sizeof(CT_U64),
-                       .align = CT_ALIGN8,
-                       .name  = "U64"};
-
-CT_Typedef Type_F32 = {.size  = sizeof(CT_F32),
-                       .align = CT_ALIGN4,
-                       .name  = "F32"};
-
-CT_Typedef Type_F64 = {.size  = sizeof(CT_F64),
-                       .align = CT_ALIGN8,
-                       .name  = "F64"};
+ct_deftype(Type_I32, CT_I32, "I32", CT_ALIGN4);
+ct_deftype(Type_I64, CT_I64, "I64", CT_ALIGN8);
+ct_deftype(Type_U32, CT_U32, "U32", CT_ALIGN4);
+ct_deftype(Type_U64, CT_U64, "U64", CT_ALIGN8);
+ct_deftype(Type_F32, CT_F32, "F32", CT_ALIGN4);
+ct_deftype(Type_F64, CT_F64, "F64", CT_ALIGN8);
 
 static void print_i32(FILE *out, const CT_Var x) {
   fprintf(out, "i32: %" PRId32 "\n", *((CT_I32 *)x));

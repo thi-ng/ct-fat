@@ -1,6 +1,6 @@
 #include "fatptr.h"
 
-CT_TypeCache __ctfatptr_types = {.types = {0}, .next_id = 1};
+CT_TypeRegistry __ctfatptr_types = {.types = {0}, .next_id = 1};
 
 void ct_register_type(CT_Typedef *type) {
   type->id = __ctfatptr_types.next_id;

@@ -1,6 +1,6 @@
 #include "protos/math.h"
 
-CT_Typedef Type_Math = {.abstract = 1, .name = "Math"};
+ct_defproto(Type_Math, "Math");
 
 void init_type_math() {
   if (!Type_Math.id) {

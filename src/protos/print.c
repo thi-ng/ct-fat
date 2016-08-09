@@ -1,6 +1,6 @@
 #include "protos/print.h"
 
-CT_Typedef Type_Print = {.abstract = 1, .name = "Print"};
+ct_defproto(Type_Print, "Print");
 
 void init_type_print() {
   if (!Type_Print.id) {

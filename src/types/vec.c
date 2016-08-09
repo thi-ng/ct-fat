@@ -1,8 +1,6 @@
 #include "types/vec.h"
 
-CT_Typedef Type_Vec4 = {.size  = sizeof(CT_Vec4),
-                        .align = CT_ALIGN16,
-                        .name  = "Vec4"};
+ct_deftype(Type_Vec4, CT_Vec4, "Vec4", CT_ALIGN16);
 
 static void print_vec4(FILE *out, const CT_Var x) {
   const CT_Vec4 *v = x;

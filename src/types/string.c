@@ -4,9 +4,7 @@
 #include "protos/print.h"
 #include "types/num.h"
 
-CT_Typedef Type_String = {.size  = sizeof(CT_String),
-                          .align = CT_ALIGN4,
-                          .name  = "String"};
+ct_deftype(Type_String, CT_String, "String", CT_ALIGN4);
 
 static void print_str(FILE *out, const CT_Var x) {
   fprintf(out, "str: %s\n", ((CT_String *)x)->val);
@@ -37,9 +35,16 @@ static CT_Var cast_str(const CT_Var x, const CT_Typedef *type) {
   return NULL;
 }
 
-static CT_U32 hash_str(const CT_Var x) {
+static uint32_t hash_str(const CT_Var x) {
   char *ptr = ((CT_String *)x)->val;
   return ct_murmur3_32(ptr, strlen(ptr));
+}
+
+static CT_Var assign_str(CT_Var dest, CT_Var src) {
+  if (ct_typeof(src) != &Type_String) {
+    CT_String *cast = ct_cast(src, &Type_String);
+  }
+  return NULL;
 }
 
 void init_type_string() {

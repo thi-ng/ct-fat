@@ -7,6 +7,14 @@
 #define MURMUR_H2 ((uint32_t)0x85ebca6b)
 #define MURMUR_H3 ((uint32_t)0xc2b2ae35)
 
+ct_defproto(Type_Hash, "Hash");
+
+void init_type_hash() {
+  if (!Type_Hash.id) {
+    ct_register_type(&Type_Hash);
+  }
+}
+
 ct_inline uint32_t mixK(uint32_t k) {
   return ct_rotl32(k * MURMUR_C1, 15) * MURMUR_C2;
 }
@@ -57,26 +65,11 @@ uint64_t ct_murmur3_64(const CT_Var data, size_t len) {
 }
 
 uint32_t ct_hash32(CT_Var x) {
-  CT_Hash *impl = ct_protocol_lookup(Type_Hash, CT_Hash, x);
-  if (impl && impl->hash32) {
-    return impl->hash32(x);
-  }
+  ct_protocol_call(Type_Hash, CT_Hash, hash32, x, x);
   return ct_murmur3_32(x, ct_typeof(x)->size);
 }
 
-// FIXME U64
 uint64_t ct_hash64(CT_Var x) {
-  CT_Hash *impl = ct_protocol_lookup(Type_Hash, CT_Hash, x);
-  if (impl && impl->hash64) {
-    return impl->hash64(x);
-  }
+  ct_protocol_call(Type_Hash, CT_Hash, hash64, x, x);
   return ct_murmur3_64(x, ct_typeof(x)->size);
-}
-
-CT_Typedef Type_Hash = {.abstract = 1, .name = "Hash"};
-
-void init_type_hash() {
-  if (!Type_Hash.id) {
-    ct_register_type(&Type_Hash);
-  }
 }

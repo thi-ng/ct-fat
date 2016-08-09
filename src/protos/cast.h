@@ -9,5 +9,6 @@ extern CT_Typedef Type_Cast;
 void init_type_cast() __attribute__((constructor));
 
 ct_inline CT_Var ct_cast(const CT_Var x, const CT_Typedef *type) {
-  return ct_protocol_lookup(Type_Cast, CT_Cast, x)->cast(x, type);
+  ct_protocol_call(Type_Cast, CT_Cast, cast, x, x, type);
+  return NULL;  // FIXME thow error
 }
