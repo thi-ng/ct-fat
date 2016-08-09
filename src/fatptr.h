@@ -11,6 +11,7 @@
 #define CT_MARK_BITS 1
 #define CT_REF_BITS 18
 #define CT_OFFSET_BITS 3
+#define CT_OFFSET_MASK (size_t)((1 << CT_OFFSET_BITS) - 1)
 
 #define ct_decode_align(a) (2 << (a + 1))
 
@@ -23,7 +24,7 @@
 #define ct_type_impl(T, proto, ...) \
   { .type = &T, .size = sizeof(proto), .impls = &((proto){__VA_ARGS__}) }
 
-#define protocol_lookup(T, proto, instance) \
+#define ct_protocol_lookup(T, proto, instance) \
   ((proto *)(ct_typeof(instance)->impls[(T).id]))
 
 #define ct_alloc_stack(type)                                             \
@@ -40,7 +41,7 @@
 
 // -------------------- internal type definitions
 
-enum { CT_ALLOC_STACK = 0, CT_ALLOC_HEAP = 1, CT_ALLOC_RAW = 2 };
+enum { CT_ALLOC_STACK = 0, CT_ALLOC_HEAP, CT_ALLOC_RAW };
 enum { CT_ALIGN4 = 0, CT_ALIGN8, CT_ALIGN16, CT_ALIGN32 };
 
 typedef void *CT_Var;
@@ -109,5 +110,6 @@ ct_inline bool ct_implements(const CT_Var self, const CT_Typedef *proto) {
 // -------------------- builtin type definitions
 
 #include "protos/cast.h"
+#include "protos/hash.h"
 #include "protos/math.h"
 #include "protos/print.h"

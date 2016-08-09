@@ -4,11 +4,8 @@
 
 #define $str(x) $(Type_String, CT_String, x)
 
-typedef struct {
-  char *val;
-  size_t len;
-} CT_String;
+typedef struct { char *val; } CT_String;
 
 extern CT_Typedef Type_String;
 
-void init_type_string() __attribute__((constructor(100)));
+void init_type_string() __attribute__((constructor));

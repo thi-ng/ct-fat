@@ -6,7 +6,7 @@ int main() {
   CT_U32 *a = $u32(0x40302010);
   //CT_Var *b = $u32(0xcafebabe);
   CT_F32 *b1   = $f32(3.1415926);
-  CT_F64 *b2   = new_f64();
+  CT_F64 *b2   = ct_new_f64();
   *b2          = *b1 * 2;
   CT_Vec4 *c   = $vec4(1, 2, 3, 4);
   CT_String *d = $str("hello world!");
@@ -19,18 +19,19 @@ int main() {
   CT_INFO("%08x", *((uint32_t *)b2 - 1));
   CT_INFO("%08x", *((uint32_t *)c - 1));
   CT_INFO("%08x", *((uint32_t *)d - 1));
-  print(a);
-  print(b1);
-  print(b2);
-  print(c);
-  print(d);
-  print(add(a, a));
-  CT_Var (*add)(CT_Var, CT_Var) = protocol_lookup(Type_Math, CT_Math, a)->add;
-  CT_INFO("adder: %p", add);
-  print(add(a, b1));
+  ct_print_to(stdout, a);
+  ct_print(b1);
+  ct_print(b2);
+  ct_print(c);
+  ct_print(d);
+  ct_print(ct_add(a, a));
+  CT_Var (*add)(CT_Var, CT_Var) =
+      ct_protocol_lookup(Type_Math, CT_Math, a)->add;
+  ct_print(add(a, b1));
   CT_INFO("a u32?: %d", ct_is_instance_of(a, &Type_U32));
   CT_INFO("impls Print?: %d", ct_implements(b1, &Type_Print));
-  print(cast($str("257"), &Type_F32));
+  ct_print(ct_cast($str("1e6"), &Type_F64));
+  ct_print($u64(ct_hash64(d)));
   ct_free(a);
   ct_free(b1);
   ct_free(b2);

@@ -4,7 +4,8 @@ CT_TypeCache __ctfatptr_types = {.types = {0}, .next_id = 1};
 
 void ct_register_type(CT_Typedef *type) {
   type->id = __ctfatptr_types.next_id;
-  CT_DEBUG("register type: %s (%u)", type->name, type->id);
+  CT_DEBUG("register type: %s (id: %u, size: %zu, align: %zu)", type->name,
+           type->id, type->size, type->align & CT_OFFSET_MASK);
   __ctfatptr_types.types[__ctfatptr_types.next_id] = type;
   __ctfatptr_types.next_id++;
 }

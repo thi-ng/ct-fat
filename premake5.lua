@@ -4,7 +4,7 @@ language "C"
 includedirs { "src", "../geom-c/src" }
 targetdir "bin/%{cfg.buildcfg}"
 flags { "Symbols", "C++11" }
-linkoptions {"-lm", "--verbose"}
+linkoptions {"-lm"}
 
 filter "configurations:debug"
 defines { "DEBUG", "CT_FEATURE_CHECKS", "CT_FEATURE_CHECK_MEM" }
