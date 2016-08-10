@@ -41,6 +41,13 @@
 #define ct_type_impl(T, proto, ...) \
   { .type = &T, .size = sizeof(proto), .impls = &((proto){__VA_ARGS__}) }
 
+#define ct_protocol_initializer(T, suffix) \
+  void init_type_##suffix() {              \
+    if (!T.id) {                           \
+      ct_register_type(&T);                \
+    }                                      \
+  }
+
 #define ct_protocol_lookup(T, proto, instance) \
   ((proto *)(ct_typeof(instance)->impls[(T).id]))
 

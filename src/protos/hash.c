@@ -8,12 +8,7 @@
 #define MURMUR_H3 ((uint32_t)0xc2b2ae35)
 
 ct_defproto(Type_Hash, "Hash");
-
-void init_type_hash() {
-  if (!Type_Hash.id) {
-    ct_register_type(&Type_Hash);
-  }
-}
+ct_protocol_initializer(Type_Hash, hash);
 
 ct_inline uint32_t mixK(uint32_t k) {
   return ct_rotl32(k * MURMUR_C1, 15) * MURMUR_C2;
