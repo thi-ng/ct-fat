@@ -1,7 +1,6 @@
 #pragma once
 
 #include "fatptr.h"
-#include "types/num.h"
 
 typedef struct {
   uint32_t (*hash32)(const CT_Var);

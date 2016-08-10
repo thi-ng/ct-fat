@@ -1,7 +1,5 @@
 #include <inttypes.h>
 
-#include "protos/math.h"
-#include "protos/print.h"
 #include "types/num.h"
 
 ct_deftype(Type_I32, CT_I32, "I32", CT_ALIGN4);
