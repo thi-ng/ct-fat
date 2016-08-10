@@ -50,10 +50,13 @@ CT_Var ct_header_init(CT_Var head, const CT_Typedef *type, size_t alloc) {
   size_t offset;
   CT_DEBUG("hd_init: %p", head);
   switch (type->align) {
-    case 2:
+    case CT_ALIGN32:
+      offset = 7 - (((uintptr_t)head & 0x1f) >> 2);
+      break;
+    case CT_ALIGN16:
       offset = 3 - (((uintptr_t)head & 0xf) >> 2);
       break;
-    case 1:
+    case CT_ALIGN8:
       offset = 1 - (((uintptr_t)head & 0x7) >> 2);
       break;
     default:

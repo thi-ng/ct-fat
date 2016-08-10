@@ -121,6 +121,7 @@ ct_inline bool ct_implements(const CT_Var self, const CT_Typedef *proto) {
 // -------------------- builtin type definitions
 
 #include "protos/cast.h"
+#include "protos/compare.h"
 #include "protos/hash.h"
 #include "protos/math.h"
 #include "protos/print.h"
