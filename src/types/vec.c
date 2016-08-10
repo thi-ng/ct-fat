@@ -33,7 +33,7 @@ static int compare_vec4(CT_Var a, CT_Var b) {
   return -100;  // FIXME
 }
 
-void init_type_vec() {
+void ct_init_type_vec() {
   if (!Type_Vec4.id) {
     ct_register_type(&Type_Vec4);
     ct_extend_type(Type_Vec4, ct_type_impl(Type_Print, CT_Print, print_vec4),

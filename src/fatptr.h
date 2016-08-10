@@ -17,6 +17,10 @@
 
 // clang-format off
 
+#define ct_declare_type(T, suffix)                                   \
+  extern CT_Typedef T;                                               \
+  void ct_init_type_##suffix() __attribute__((constructor))
+
 #define ct_deftype(T, instance, name_, align_, ...) \
   CT_Typedef T = {                                  \
       .size = sizeof(instance),                     \
@@ -42,7 +46,7 @@
   { .type = &T, .size = sizeof(proto), .impls = &((proto){__VA_ARGS__}) }
 
 #define ct_protocol_initializer(T, suffix) \
-  void init_type_##suffix() {              \
+  void ct_init_type_##suffix() {           \
     if (!T.id) {                           \
       ct_register_type(&T);                \
     }                                      \
@@ -67,10 +71,6 @@
 #define $(type, instance, align, ...)                                         \
   (instance *)memcpy(ct_alloc_stack(type, align), &((instance){__VA_ARGS__}), \
                      sizeof(instance))
-
-#define ct_new(type, instance, align_) \
-  (instance *)ct_header_init##align_(  \
-      ct_alloc(&type) - ct_decode_align(type.align), &type, CT_ALLOC_HEAP)
 
 // -------------------- internal type definitions
 
@@ -146,6 +146,7 @@ ct_inline bool ct_implements(const CT_Var self, const CT_Typedef *proto) {
 
 // -------------------- builtin type definitions
 
+#include "protos/alloc.h"
 #include "protos/cast.h"
 #include "protos/compare.h"
 #include "protos/hash.h"

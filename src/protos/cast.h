@@ -2,11 +2,9 @@
 
 #include "fatptr.h"
 
+ct_declare_type(Type_Cast, cast);
+
 typedef struct { CT_Var (*cast)(const CT_Var, const CT_Typedef *); } CT_Cast;
-
-extern CT_Typedef Type_Cast;
-
-void init_type_cast() __attribute__((constructor));
 
 ct_inline CT_Var ct_cast(const CT_Var x, const CT_Typedef *type) {
   const CT_Typedef *tx = ct_typeof(x);

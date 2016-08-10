@@ -51,10 +51,10 @@ static CT_Var assign_str(CT_Var dest, CT_Var src) {
   return NULL;
 }
 
-void init_type_string() {
+void ct_init_type_string() {
   if (!Type_String.id) {
-    init_type_cast();
-    init_type_print();
+    ct_init_type_cast();
+    ct_init_type_print();
     ct_register_type(&Type_String);
     ct_extend_type(Type_String, ct_type_impl(Type_Print, CT_Print, print_str),
                    ct_type_impl(Type_Cast, CT_Cast, cast_str),
