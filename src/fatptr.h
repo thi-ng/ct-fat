@@ -13,12 +13,24 @@
 #define CT_OFFSET_BITS 3
 #define CT_OFFSET_MASK (size_t)((1 << CT_OFFSET_BITS) - 1)
 
-#define ct_decode_align(a) (2 << (a + 1))
+#define ct_decode_align(a) (2 << ((a) + 1))
 
-#define ct_deftype(T, instance, name_, align_) \
-  CT_Typedef T = {.size = sizeof(instance), .align = align_, .name = name_}
+// clang-format off
 
-#define ct_defproto(T, name_) CT_Typedef T = {.abstract = 1, .name = name_}
+#define ct_deftype(T, instance, name_, align_, ...) \
+  CT_Typedef T = {                                  \
+      .size = sizeof(instance),                     \
+      .align = align_,                              \
+      .name = name_,                                \
+      __VA_ARGS__}
+
+#define ct_defproto(T, name_, ...) \
+  CT_Typedef T = {                 \
+    .abstract = 1,                 \
+    .name = name_,                 \
+    __VA_ARGS__}
+
+// clang-format on
 
 #define ct_extend_type(T, ...)                                            \
   do {                                                                    \
@@ -64,6 +76,7 @@ typedef struct {
   void *impls[1 << CT_TYPE_BITS];
   size_t size;
   size_t id : CT_TYPE_BITS;
+  size_t parent_id : CT_TYPE_BITS;
   size_t align : CT_OFFSET_BITS;
   size_t abstract : 1;
   char *name;

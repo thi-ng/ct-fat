@@ -4,8 +4,9 @@ CT_TypeRegistry __ctfat_registry = {.types = {0}, .next_id = 1};
 
 void ct_register_type(CT_Typedef *type) {
   type->id = __ctfat_registry.next_id;
-  CT_DEBUG("register type: %s (id: %u, size: %zu, align: %zu)", type->name,
-           type->id, type->size, type->align & CT_OFFSET_MASK);
+  CT_DEBUG("register type: %s (id: %u, parent: %u, size: %zu, align: %zu)",
+           type->name, type->id, type->parent_id, type->size,
+           type->align & CT_OFFSET_MASK);
   __ctfat_registry.types[__ctfat_registry.next_id] = type;
   __ctfat_registry.next_id++;
 }
