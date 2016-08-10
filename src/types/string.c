@@ -8,9 +8,6 @@ static void print_str(FILE *out, const CT_Var x) {
 
 static CT_Var cast_str(const CT_Var x, const CT_Typedef *type) {
   CT_INFO("cast target type: %zu", type->id);
-  if (type->id == Type_String.id) {
-    return x;
-  }
   if (type->id == Type_I32.id) {
     CT_I32 *res = ct_new_i32();
     *res        = (CT_I32)atol(((CT_String *)x)->val);

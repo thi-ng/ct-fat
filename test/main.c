@@ -32,6 +32,7 @@ int main() {
   CT_INFO("impls Print?: %d", ct_implements(b1, &Type_Print));
   ct_print(ct_cast($str("1e6"), &Type_F64));
   ct_print($u32(ct_hash32(c)));
+  ct_print($i32(ct_compare(c, c)));
   ct_free(a);
   ct_free(b1);
   ct_free(b2);

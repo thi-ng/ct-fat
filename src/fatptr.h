@@ -32,23 +32,26 @@
 #define ct_protocol_lookup(T, proto, instance) \
   ((proto *)(ct_typeof(instance)->impls[(T).id]))
 
-#define ct_protocol_call(T, P, method, inst, ...) \
-  P *proto = ct_protocol_lookup(T, P, inst);      \
-  if (proto && proto->method) {                   \
-    return proto->method(__VA_ARGS__);            \
+#define ct_protocol_call(T, P, method, inst, ...)  \
+  const P *proto = ct_protocol_lookup(T, P, inst); \
+  if (proto && proto->method) {                    \
+    return proto->method(__VA_ARGS__);             \
   }
 
-#define ct_alloc_stack(type)                                             \
-  ct_header_init(alloca(ct_decode_align(type.align) + type.size), &type, \
-                 CT_ALLOC_STACK)
+#define ct_protocol_call_fast(T, P, method, inst, ...) \
+  return ct_protocol_lookup(T, P, inst)->method(__VA_ARGS__);
 
-#define $(type, instance, ...)                                         \
-  (instance *)memcpy(ct_alloc_stack(type), &((instance){__VA_ARGS__}), \
+#define ct_alloc_stack(type, align_)                                      \
+  ct_header_init##align_(alloca(ct_decode_align(type.align) + type.size), \
+                         &type, CT_ALLOC_STACK)
+
+#define $(type, instance, align, ...)                                         \
+  (instance *)memcpy(ct_alloc_stack(type, align), &((instance){__VA_ARGS__}), \
                      sizeof(instance))
 
-#define ct_new(type, instance)                                              \
-  (instance *)ct_header_init(ct_alloc(&type) - ct_decode_align(type.align), \
-                             &type, CT_ALLOC_HEAP)
+#define ct_new(type, instance, align_) \
+  (instance *)ct_header_init##align_(  \
+      ct_alloc(&type) - ct_decode_align(type.align), &type, CT_ALLOC_HEAP)
 
 // -------------------- internal type definitions
 
@@ -85,7 +88,7 @@ typedef struct {
   uint32_t align : CT_OFFSET_BITS;
 } CT_Header;
 
-extern CT_TypeRegistry __ctfatptr_types;
+extern CT_TypeRegistry __ctfat_registry;
 
 void ct_register_type(CT_Typedef *type);
 void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num);
@@ -93,7 +96,10 @@ void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num);
 CT_Var ct_alloc(const CT_Typedef *type);
 void ct_free(CT_Var self);
 
-CT_Var ct_header_init(CT_Var head, const CT_Typedef *type, size_t alloc);
+CT_Var ct_header_init4(CT_Var head, const CT_Typedef *type, size_t alloc);
+CT_Var ct_header_init8(CT_Var head, const CT_Typedef *type, size_t alloc);
+CT_Var ct_header_init16(CT_Var head, const CT_Typedef *type, size_t alloc);
+CT_Var ct_header_init32(CT_Var head, const CT_Typedef *type, size_t alloc);
 void ct_header_trace(CT_Header *hd);
 
 ct_inline CT_Header *ct_get_header(const CT_Var self) {
@@ -101,7 +107,7 @@ ct_inline CT_Header *ct_get_header(const CT_Var self) {
 }
 
 ct_inline CT_Typedef *ct_typeof(const CT_Var self) {
-  return __ctfatptr_types.types[ct_get_header(self)->type_id];
+  return __ctfat_registry.types[ct_get_header(self)->type_id];
 }
 
 ct_inline bool ct_is_instance_of(const CT_Var self, const CT_Typedef *type) {

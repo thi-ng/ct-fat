@@ -2,7 +2,7 @@
 
 #include "fatptr.h"
 
-#define $str(x) $(Type_String, CT_String, x)
+#define $str(x) $(Type_String, CT_String, 4, x)
 
 typedef struct { char *val; } CT_String;
 
