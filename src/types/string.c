@@ -44,7 +44,11 @@ static int compare_str(const CT_Var a, const CT_Var b) {
   return -100;  // FIXME throw
 }
 
-static CT_Var assign_str(CT_Var dest, CT_Var src) {
+static size_t length_str(const CT_Var x) {
+  return strlen(((CT_String *)x)->val);
+}
+
+static CT_Var assign_str(CT_Var dest, const CT_Var src) {
   if (ct_typeof(src) != &Type_String) {
     CT_String *cast = ct_cast(src, &Type_String);
   }
@@ -53,12 +57,12 @@ static CT_Var assign_str(CT_Var dest, CT_Var src) {
 
 void ct_init_type_string() {
   if (!Type_String.id) {
-    ct_init_type_cast();
-    ct_init_type_print();
+    ct_require(cast, compare, hash, len, print);
     ct_register_type(&Type_String);
-    ct_extend_type(Type_String, ct_type_impl(Type_Print, CT_Print, print_str),
-                   ct_type_impl(Type_Cast, CT_Cast, cast_str),
+    ct_extend_type(Type_String, ct_type_impl(Type_Cast, CT_Cast, cast_str),
                    ct_type_impl(Type_Compare, CT_Compare, compare_str),
-                   ct_type_impl(Type_Hash, CT_Hash, hash_str));
+                   ct_type_impl(Type_Hash, CT_Hash, hash_str),
+                   ct_type_impl(Type_Len, CT_Len, length_str),
+                   ct_type_impl(Type_Print, CT_Print, print_str));
   }
 }

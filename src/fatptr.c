@@ -28,21 +28,6 @@ void ct_header_trace(CT_Header *hd) {
           ct_decode_align(hd->align));
 }
 
-CT_Var ct_alloc(const CT_Typedef *type) {
-  size_t align  = ct_decode_align(type->align);
-  uint8_t *head = calloc(1, align + type->size);
-  return head + align;
-}
-
-void ct_free(CT_Var self) {
-  CT_Header *hd = ct_get_header(self);
-  if (CT_ALLOC_HEAP == hd->alloc) {
-    uint8_t *block = (uint8_t *)self - ct_decode_align(hd->align);
-    CT_DEBUG("free: %p", block);
-    free(block);
-  }
-}
-
 ct_inline CT_Var set_header(CT_Header *hd,
                             const CT_Typedef *type,
                             size_t alloc) {

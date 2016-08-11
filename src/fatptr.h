@@ -1,10 +1,12 @@
 #pragma once
 
+#include <alloca.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include "cthing.h"
 #include "init.h"
+#include "vargs.h"
 
 #define CT_TYPE_BITS 8
 #define CT_ALLOC_BITS 2
@@ -72,6 +74,37 @@
   (instance *)memcpy(ct_alloc_stack(type, align), &((instance){__VA_ARGS__}), \
                      sizeof(instance))
 
+#define _ct_require1(a) ct_init_type_##a()
+#define _ct_require2(a, b) \
+  _ct_require1(a);         \
+  _ct_require1(b)
+#define _ct_require3(a, b, c) \
+  _ct_require2(a, b);         \
+  _ct_require1(c)
+#define _ct_require4(a, b, c, d) \
+  _ct_require2(a, b);            \
+  _ct_require2(c, d)
+#define _ct_require5(a, b, c, d, e) \
+  _ct_require3(a, b, c);            \
+  _ct_require2(d, e)
+#define _ct_require6(a, b, c, d, e, f) \
+  _ct_require3(a, b, c);               \
+  _ct_require3(d, e, f)
+#define _ct_require7(a, b, c, d, e, f, g) \
+  _ct_require4(a, b, c, d);               \
+  _ct_require3(e, f, g)
+#define _ct_require8(a, b, c, d, e, f, g, h) \
+  _ct_require4(a, b, c, d);                  \
+  _ct_require4(e, f, g, h)
+#define _ct_require9(a, b, c, d, e, f, g, h, i) \
+  _ct_require5(a, b, c, d, e);                  \
+  _ct_require4(f, g, h, i)
+#define _ct_require10(a, b, c, d, e, f, g, h, i, j) \
+  _ct_require5(a, b, c, d, e);                      \
+  _ct_require5(f, g, h, i, j)
+
+#define ct_require(...) VA_MACRO_NAME(_ct_require, __VA_ARGS__)(__VA_ARGS__)
+
 // -------------------- internal type definitions
 
 enum { CT_ALLOC_STACK = 0, CT_ALLOC_HEAP, CT_ALLOC_RAW };
@@ -113,9 +146,6 @@ extern CT_TypeRegistry __ctfat_registry;
 void ct_register_type(CT_Typedef *type);
 void ct_typedef_set_impls(CT_Typedef *type, CT_TypeImpl *impls, size_t num);
 
-CT_Var ct_alloc(const CT_Typedef *type);
-void ct_free(CT_Var self);
-
 CT_Var ct_header_init4(CT_Var head, const CT_Typedef *type, size_t alloc);
 CT_Var ct_header_init8(CT_Var head, const CT_Typedef *type, size_t alloc);
 CT_Var ct_header_init16(CT_Var head, const CT_Typedef *type, size_t alloc);
@@ -130,7 +160,7 @@ ct_inline CT_Typedef *ct_typeof(const CT_Var self) {
   return __ctfat_registry.types[ct_get_header(self)->type_id];
 }
 
-ct_inline bool ct_is_instance_of(const CT_Var self, const CT_Typedef *type) {
+ct_inline bool ct_instance_of(const CT_Var self, const CT_Typedef *type) {
   return ct_get_header(self)->type_id == type->id;
 }
 
@@ -150,5 +180,6 @@ ct_inline bool ct_implements(const CT_Var self, const CT_Typedef *proto) {
 #include "protos/cast.h"
 #include "protos/compare.h"
 #include "protos/hash.h"
+#include "protos/len.h"
 #include "protos/math.h"
 #include "protos/print.h"

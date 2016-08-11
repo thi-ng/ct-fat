@@ -35,8 +35,10 @@ static int compare_vec4(CT_Var a, CT_Var b) {
 
 void ct_init_type_vec() {
   if (!Type_Vec4.id) {
+    ct_require(compare, print);
     ct_register_type(&Type_Vec4);
-    ct_extend_type(Type_Vec4, ct_type_impl(Type_Print, CT_Print, print_vec4),
-                   ct_type_impl(Type_Compare, CT_Compare, compare_vec4));
+    ct_extend_type(Type_Vec4,
+                   ct_type_impl(Type_Compare, CT_Compare, compare_vec4),
+                   ct_type_impl(Type_Print, CT_Print, print_vec4));
   }
 }

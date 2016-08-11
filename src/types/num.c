@@ -55,9 +55,7 @@ static CT_Var add_u32(CT_Var a, CT_Var b) {
 
 void ct_init_type_num() {
   if (!Type_I32.id) {
-    ct_init_type_cast();
-    ct_init_type_print();
-    ct_init_type_math();
+    ct_require(cast, math, print);
 
     ct_register_type(&Type_I32);
     ct_register_type(&Type_I64);

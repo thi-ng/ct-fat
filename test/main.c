@@ -24,13 +24,14 @@ int main() {
   ct_print(b2);
   ct_print(c);
   ct_print(d);
-  ct_print(ct_add(a, a));
+  ct_print($i32(ct_length(d)));
+  ct_print(ct_add(a, a));  // FIXME mem leak
   CT_Var (*add)(CT_Var, CT_Var) =
       ct_protocol_lookup(Type_Math, CT_Math, a)->add;
   ct_print(add(a, b1));
-  CT_INFO("a u32?: %d", ct_is_instance_of(a, &Type_U32));
+  CT_INFO("a u32?: %d", ct_instance_of(a, &Type_U32));
   CT_INFO("impls Print?: %d", ct_implements(b1, &Type_Print));
-  ct_print(ct_cast($str("1e6"), &Type_F64));
+  ct_print(ct_cast($str("1e6"), &Type_F64));  // FIXME mem leak
   ct_print($u32(ct_hash32(c)));
   ct_print($i32(ct_compare(c, c)));
   ct_free(a);
