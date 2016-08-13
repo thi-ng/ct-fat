@@ -1,7 +1,7 @@
 workspace "ct-fat"
 configurations { "debug", "release" }
 language "C"
-includedirs { "src", "../geom-c/src" }
+includedirs { "ext", "src", "../geom-c/src" }
 targetdir "bin/%{cfg.buildcfg}"
 flags { "Symbols", "C++11" }
 linkoptions {"-lm"}

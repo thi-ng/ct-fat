@@ -2,11 +2,13 @@
 
 #include <alloca.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "cthing.h"
-#include "init.h"
-#include "vargs.h"
+#include "ct-head/features.h"
+#include "ct-head/log.h"
+#include "ct-head/vargs.h"
 
 #define CT_TYPE_BITS 8
 #define CT_ALLOC_BITS 2
@@ -103,7 +105,7 @@
   _ct_require5(a, b, c, d, e);                      \
   _ct_require5(f, g, h, i, j)
 
-#define ct_require(...) VA_MACRO_NAME(_ct_require, __VA_ARGS__)(__VA_ARGS__)
+#define ct_require(...) CT_VA_DISPATCH(_ct_require, __VA_ARGS__)(__VA_ARGS__)
 
 // -------------------- internal type definitions
 
