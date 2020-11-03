@@ -1,0 +1,92 @@
+#!/bin/sh
+
+# compile with SIMD:
+# ./compile.sh -asd
+
+SRC=;
+SRC_DIRS="src src/types src/protos"
+for d in $SRC_DIRS; do for f in `ls $d/*.c`; do SRC="$SRC $f"; done; done;
+
+TESTS=
+CFLAGS="-std=c11 -Os -Isrc -I../geom-c/src"
+EMFLAGS="-s ASM_JS=1 -s ASSERTIONS=0 -s INVOKE_RUN=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s MODULARIZE=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY='16*1024*1024'"
+OUT=cthing.js
+MIN=cthing.min.js
+
+usage()
+{
+    cat <<EOF
+Usage:
+  -a     : separate asm.js output
+  -c     : enable Closure compiler step
+  -d     : remove duplicate functions
+  -D SYM : add define
+  -h     : show this help
+  -k     : enable runtime checks
+  -m     : enable memory checks
+  -s     : enable SSE (SIMD.js)
+  -t     : include tests
+EOF
+    exit 1
+}
+
+while getopts acdhkmstD: opt; do
+    case $opt in
+        s) CFLAGS="$CFLAGS -DCT_FEATURE_SSE -fslp-vectorize -msse2"
+           EMFLAGS="$EMFLAGS -s SIMD=1"
+           ;;
+        a) EMFLAGS="$EMFLAGS --separate-asm"
+           ;;
+        c) EMFLAGS="$EMFLAGS --closure 1"
+           ;;
+        d) EMFLAGS="$EMFLAGS -s ELIMINATE_DUPLICATE_FUNCTIONS=1"
+           # EMFLAGS="$EMFLAGS -s ELIMINATE_DUPLICATE_FUNCTIONS_PASSES=5"
+           EMFLAGS="$EMFLAGS -s ELIMINATE_DUPLICATE_FUNCTIONS_DUMP_EQUIVALENT_FUNCTIONS=1"
+           ;;
+        k) CFLAGS="$CFLAGS -DCT_FEATURE_CHECKS"
+           ;;
+        m) CFLAGS="$CFLAGS -DCT_FEATURE_CHECK_MEM"
+           ;;
+        t) CFLAGS="$CFLAGS -DDEBUG -DCT_FEATURE_LOG"
+           TESTS=""
+           for f in `ls test/*.c`; do TESTS="$TESTS $f"; done;
+           ;;
+        h) usage
+           ;;
+        D) CFLAGS="$CFLAGS -D$OPTARG"
+           ;;
+        \?) echo "invalid option: $opt" >&2
+            usage
+            exit 1
+            ;;
+        :) echo "$opt missing argument" >&2
+           usage
+           exit 1
+           ;;
+    esac
+done
+
+echo "cflags: $CFLAGS"
+echo "emflags: $EMFLAGS"
+echo "src: $SRC"
+echo "test: $TESTS"
+
+time emcc $CFLAGS \
+     --memory-init-file 0 \
+     --emit-symbol-map \
+     $EMFLAGS \
+     -s "TOTAL_STACK=1*1024*1024" \
+     -s "EXPORT_NAME='cthing'" \
+     -o $OUT \
+     $SRC \
+     $TESTS
+
+ls -la $OUT
+echo "postprocessing..."
+node postprocess.js
+ls -la $MIN
+#cp $OUT geom-cljs/resources/public/js/
+#cp $MIN geom-cljs/resources/public/js/
+
+# -s EXPORTED_FUNCTIONS=@exports.json
+# -s ELIMINATE_DUPLICATE_FUNCTIONS_DUMP_EQUIVALENT_FUNCTIONS=1
